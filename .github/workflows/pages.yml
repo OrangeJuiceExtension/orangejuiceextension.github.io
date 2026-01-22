@@ -1,4 +1,4 @@
-name: Build & Deploy GitHub Pages from OJ repo
+name: Build & Deploy GitHub Pages
 
 on:
   workflow_dispatch:
@@ -15,6 +15,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout OrangeJuice repo
         uses: actions/checkout@v4
@@ -22,15 +23,22 @@ jobs:
           repository: OrangeJuiceExtension/OrangeJuice
           path: source
 
-      - name: Prepare site from /docs
-        run: |
-          mkdir -p public
-          cp -R source/docs/. public/
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        working-directory: source
+        run: bun install --frozen-lockfile
+
+      - name: Build docs
+        working-directory: source
+        run: bun run docs
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: public
+          # ⬇️ CHANGE THIS if `bun run docs` outputs elsewhere
+          path: source/public
 
   deploy:
     needs: build
@@ -38,6 +46,7 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
