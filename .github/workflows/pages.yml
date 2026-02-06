@@ -38,7 +38,7 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           # ⬇️ CHANGE THIS if `bun run docs` outputs elsewhere
-          path: source/public
+          path: source/build-docs
 
   deploy:
     needs: build
